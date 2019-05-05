@@ -29,7 +29,6 @@ public class Speed extends Field {
     class GPSspeed implements LocationListener {
         @Override
         public void onLocationChanged(Location loc) {
-            Log.d("OBC","speed: "+loc.getSpeed());
             speedText.setText((Math.round((loc.getSpeed()*60*60*0.000621371192) * 10)/10.0)+" mph");
         }
         @Override
