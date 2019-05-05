@@ -43,12 +43,8 @@ public class MainActivity extends AppCompatActivity {
     private void handleKeyPress(String action) {
         if (action.equals("power_button.long_pressed")) {
             Log.d("OBC","Power button long press, trying to shut down...");
-            try {
-                Process process = Runtime.getRuntime().exec("/system/xbin/su -c am start -a android.intent.action.ACTION_REQUEST_SHUTDOWN");
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            } catch (Exception e) {
-                Log.e("OBC", "Unable to shut down: ", e);
-            }
+            Intent intent=new Intent("com.wahoofitness.bolt.system.shutdown");
+            sendBroadcast(intent);
         }
 
         TextView helloworld = (TextView) findViewById(R.id.helloworld);
@@ -96,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ((TextView) findViewById(R.id.textView)).getPaint().setAntiAlias(false);
 
 
         startKeyPressListener();
