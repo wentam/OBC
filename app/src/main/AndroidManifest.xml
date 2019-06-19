@@ -18,7 +18,6 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.HOME" />
-                j
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
