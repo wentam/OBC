@@ -46,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
             Log.d("OBC","Power button long press, trying to shut down...");
             Intent intent=new Intent("com.wahoofitness.bolt.system.shutdown");
             sendBroadcast(intent);
+        } else if (action.equals("power_button.pressed")) {
+            Intent intent=new Intent(this, us.egeler.matt.obc.SettingsActivity.class);
+            startActivity(intent);
         }
 
         TextView helloworld = (TextView) findViewById(R.id.helloworld);
