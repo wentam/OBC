@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         //Apply attribute changes to this window
         window.setAttributes(layoutpars);
     }
-    
+
     @Override
     protected void onPause() {
         boltKeyPressListener.pause();
