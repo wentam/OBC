@@ -15,7 +15,7 @@ public class BoltKeyPressListener {
         context = c;
     }
 
-    public void onKeyAction(String action) {
+    protected void onKeyAction(String action) {
         // Override me!
     }
 

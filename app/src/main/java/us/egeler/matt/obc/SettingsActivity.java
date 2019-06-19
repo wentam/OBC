@@ -44,7 +44,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onKeyAction(String action) {
+        protected void onKeyAction(String action) {
             if (action.equals("power_button.pressed")) {
                 ((Activity) context).finish();
             }

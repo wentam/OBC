@@ -23,7 +23,6 @@ public class MainActivity extends AppCompatActivity {
         //Get the current window
         Window window = getWindow();
 
-
         Settings.System.putInt(cResolver,
                 Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
         Settings.System.putInt(cResolver, Settings.System.SCREEN_BRIGHTNESS, brightness);
@@ -55,8 +54,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ((TextView) findViewById(R.id.textView)).getPaint().setAntiAlias(false);
 
-
-
         // set the screen brightness
         setScreenBrightness(5);
 
@@ -74,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onKeyAction(String action) {
+        protected void onKeyAction(String action) {
             if (action.equals("power_button.long_pressed")) {
                 Log.d("OBC","Power button long press, trying to shut down...");
                 Intent intent=new Intent("com.wahoofitness.bolt.system.shutdown");
