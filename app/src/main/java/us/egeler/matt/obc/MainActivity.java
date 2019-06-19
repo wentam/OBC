@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+    private boolean ignoreInput = false;
 
     private void setScreenBrightness(int brightness) {
         //Get the content resolver
@@ -78,14 +79,38 @@ public class MainActivity extends AppCompatActivity {
         filter.addAction("com.wahoofitness.bolt.buttons.power_button.up");
         filter.addAction("com.wahoofitness.bolt.buttons.power_button.pressed");
         filter.addAction("com.wahoofitness.bolt.buttons.power_button.long_pressed");
+        //filter.addAction("com.wahoofitness.bolt.led.set_top_led_pattern");
+        //filter.addAction("com.wahoofitness.bolt.led.set_all_led_pattern");
 
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                handleKeyPress(intent.getAction().split("\\.")[4] + "." + intent.getAction().split("\\.")[5]);
+                Log.d("OBC", "got action: "+intent.getAction());
+         /*       if (intent.getExtras() != null) {
+                    for (String key : intent.getExtras().keySet()) {
+                        Log.d("OBC", "got extra key: " + key);
+                        Log.d("OBC", "got extra value: " + intent.getExtras().get("pattern"));
+                    }
+                }*/
+         if (ignoreInput == false) {
+             handleKeyPress(intent.getAction().split("\\.")[4] + "." + intent.getAction().split("\\.")[5]);
+         }
             }
         };
         registerReceiver(receiver, filter);
+    }
+
+    @Override
+    protected void onPause() {
+        ignoreInput = true;
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        ignoreInput = false;
+        setScreenBrightness(5);
+        super.onResume();
     }
 
     @Override
