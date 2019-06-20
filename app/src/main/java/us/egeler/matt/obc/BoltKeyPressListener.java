@@ -44,13 +44,10 @@ public class BoltKeyPressListener {
         filter.addAction("com.wahoofitness.bolt.buttons.power_button.up");
         filter.addAction("com.wahoofitness.bolt.buttons.power_button.pressed");
         filter.addAction("com.wahoofitness.bolt.buttons.power_button.long_pressed");
-        //filter.addAction("com.wahoofitness.bolt.led.set_top_led_pattern");
-        //filter.addAction("com.wahoofitness.bolt.led.set_all_led_pattern");
 
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.d("OBC", "got action: "+intent.getAction());
                 if (ignoreInput == false) {
                     onKeyAction(intent.getAction().split("\\.")[4] + "." + intent.getAction().split("\\.")[5]);
                 }
