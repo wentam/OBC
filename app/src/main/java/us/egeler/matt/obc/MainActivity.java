@@ -10,10 +10,8 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.TextView;
 
 import us.egeler.matt.obc.page.MainPage;
 import us.egeler.matt.obc.page.Page;
@@ -116,8 +114,18 @@ public class MainActivity extends FragmentActivity {
                 context.sendBroadcast(intent);
             } else if (action.equals("power_button.pressed")) {
                 // power button pressed. Open settings menu.
-                Intent intent=new Intent(context, us.egeler.matt.obc.SettingsActivity.class);
+                Intent intent = new Intent(context, us.egeler.matt.obc.SettingsActivity.class);
                 context.startActivity(intent);
+            } else if (action.equals("right_button.pressed")) {
+                int currentItem = pager.getCurrentItem();
+                int itemCount = myFragmentPagerAdapter.getCount();
+
+                int targetItem = currentItem+1;
+                if (targetItem >= itemCount) {
+                    targetItem = 0;
+                }
+
+                pager.setCurrentItem(targetItem,true);
             } else {
                 // we didn't use the event. pass event to our pages.
                 for (int i = 0; i < myFragmentPagerAdapter.getCount(); i++) {
