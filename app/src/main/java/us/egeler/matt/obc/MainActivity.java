@@ -14,6 +14,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import us.egeler.matt.obc.page.MainPage;
+import us.egeler.matt.obc.page.MapPage;
 import us.egeler.matt.obc.page.Page;
 import us.egeler.matt.obc.page.TestPage;
 
@@ -76,24 +77,28 @@ public class MainActivity extends FragmentActivity {
     public static class MyFragmentPagerAdapter extends FragmentPagerAdapter {
         private Page page0;
         private Page page1;
+        private Page page2;
 
         public MyFragmentPagerAdapter(FragmentManager fm) {
             super(fm);
             page0 = new MainPage();
             page1 = new TestPage();
+            page2 = new MapPage();
         }
 
         @Override
         public int getCount() {
-            return 2;
+            return 3;
         }
 
         @Override
         public Fragment getItem(int position) {
             if (position == 0) {
                 return page0;
-            } else {
+            } else if (position == 1) {
                 return page1;
+            } else {
+                return page2;
             }
         }
     }

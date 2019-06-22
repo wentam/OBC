@@ -8,8 +8,7 @@ import android.widget.TextView;
 
 import us.egeler.matt.obc.R;
 
-// This is a static page. In the future, all pages should be generated from a config file.
-public class MainPage extends Page {
+public class MapPage extends Page {
     View view;
 
     @Override
@@ -19,8 +18,7 @@ public class MainPage extends Page {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_mainpage,null);
-        ((TextView) view.findViewById(R.id.helloworld)).getPaint().setAntiAlias(false);
+        view = inflater.inflate(R.layout.fragment_mappage,null);
         return view;
     }
 
@@ -31,9 +29,6 @@ public class MainPage extends Page {
 
     @Override
     protected boolean onKeyAction(String action) {
-        TextView helloworld = view.findViewById(R.id.helloworld);
-        helloworld.setText(action);
-
         return false;
     }
 }
