@@ -66,3 +66,6 @@ fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
+
+# we don't want to package binary libs
+app/libs

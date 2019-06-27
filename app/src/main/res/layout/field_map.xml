@@ -6,10 +6,11 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
-    <us.egeler.matt.obc.view.MapView
+    <org.mapsforge.map.android.view.MapView
         android:id="@+id/map"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+
 </android.support.constraint.ConstraintLayout>
 
 
