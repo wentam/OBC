@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/fragment"
-        android:name="us.egeler.matt.obc.field.Speed"
+        android:name="us.egeler.matt.obc.field.SpeedField"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         tools:layout_editor_absoluteX="16dp"

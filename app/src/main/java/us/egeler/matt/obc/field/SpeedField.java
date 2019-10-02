@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import us.egeler.matt.obc.R;
 
-public class Speed extends Field {
+public class SpeedField extends Field {
     private LocationManager locationManager;
     private GPSspeed GPSspeed;
     TextView speedText;
