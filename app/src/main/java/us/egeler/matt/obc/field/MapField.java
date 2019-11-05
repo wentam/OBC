@@ -47,7 +47,7 @@ public class MapField extends Field {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.field_map,null);
 
-        org.mapsforge.core.util.Parameters.USE_ANTI_ALIASING = false;
+        org.mapsforge.core.util.Parameters.ANTI_ALIASING = false;
         AndroidGraphicFactory.createInstance(getActivity().getApplication());
 
         mapView = v.findViewById(R.id.map);
