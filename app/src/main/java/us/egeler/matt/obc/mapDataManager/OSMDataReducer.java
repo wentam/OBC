@@ -15,7 +15,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 // OsmDataProcessor modifies OSM data to be suitable for use with OBC (such as by removing the word "street")
-// TODO: this class should probably use OsmDataReader
+// TODO: this class should probably use OsmXmlReader
 public class OSMDataReducer {
     public OSMDataReducer() {
 
