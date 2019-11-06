@@ -14,10 +14,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 
-// OSMDataProcessor modifies OSM data to be suitable for use with OBC (such as by removing the word "street")
-// TODO: only shorten street names on devices that need it!
-public class OSMDataProcessor {
-    public OSMDataProcessor() {
+// OsmDataProcessor modifies OSM data to be suitable for use with OBC (such as by removing the word "street")
+// TODO: this class should probably use OsmDataReader
+public class OSMDataReducer {
+    public OSMDataReducer() {
 
     }
 
