@@ -1,4 +1,4 @@
-package us.egeler.matt.obc.mapDataManager.osmDataReader;
+package us.egeler.matt.obc.mapDataManager.osmXmlReader;
 
 import android.util.Xml;
 
@@ -8,12 +8,12 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import us.egeler.matt.obc.mapDataManager.osmDataReader.osmElement.Bounds;
-import us.egeler.matt.obc.mapDataManager.osmDataReader.osmElement.Member;
-import us.egeler.matt.obc.mapDataManager.osmDataReader.osmElement.Node;
-import us.egeler.matt.obc.mapDataManager.osmDataReader.osmElement.OsmElement;
-import us.egeler.matt.obc.mapDataManager.osmDataReader.osmElement.Relation;
-import us.egeler.matt.obc.mapDataManager.osmDataReader.osmElement.Way;
+import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Bounds;
+import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Member;
+import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Node;
+import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.OsmElement;
+import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Relation;
+import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Way;
 
 // OsmXmlReader reads in OSM XML and spits out objects containing the map data into a stream as the file is read
 //

@@ -1,4 +1,4 @@
-package us.egeler.matt.obc.mapDataManager.osmDataReader.osmElement;
+package us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement;
 
 import java.util.HashMap;
 

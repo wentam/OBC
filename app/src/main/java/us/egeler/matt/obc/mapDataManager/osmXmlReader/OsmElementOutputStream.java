@@ -1,6 +1,6 @@
-package us.egeler.matt.obc.mapDataManager.osmDataReader;
+package us.egeler.matt.obc.mapDataManager.osmXmlReader;
 
-import us.egeler.matt.obc.mapDataManager.osmDataReader.osmElement.OsmElement;
+import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.OsmElement;
 
 // Not to be confused with InputStream/OutputStream/ObjectOutputStream --
 // This guy works directly with objects, no serialization or anything

@@ -1,4 +1,4 @@
-package us.egeler.matt.obc.mapDataManager.osmDataReader.osmElement;
+package us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement;
 
 public abstract class OsmElement {
     public long id;
