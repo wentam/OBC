@@ -65,21 +65,21 @@ import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Node;
 public class NodeCache {
     public static final int CACHE_TARGET_DISK = 1;
     public static final int CACHE_TARGET_MEMORY = 2;
-    public static final int CACHE_TARGET_SMART = 4; // TODO
 
-    public static final long bucketCount = 64;
-    public static final short listItemSize = 20;
+    private static final long bucketCount = 262144;
+    private static final short listItemSize = 20;
 
     HashMap<Long, Double[]> memoryCache;
 
     File diskCache;
     RandomAccessFile diskCacheFile;
-    short bucketIndexByteCount = 0;
 
     private int initializedCaches = 0;
 
     // TODO user-definable bucket counts
     // TODO user-definable cache dir/file
+
+    // TODO: handle duplicate nodes
 
     public void initCaches(int cacheTargets) throws IOException {
         if ((cacheTargets & CACHE_TARGET_MEMORY) == CACHE_TARGET_MEMORY) {
@@ -120,7 +120,7 @@ public class NodeCache {
 
                 diskCache.createNewFile();
 
-                diskCacheFile = new RandomAccessFile(diskCache,"rws");
+                diskCacheFile = new RandomAccessFile(diskCache,"rw");
 
                 initializedCaches |= CACHE_TARGET_DISK;
 
