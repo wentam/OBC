@@ -11,6 +11,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -66,13 +68,18 @@ public class NodeCache {
     public static final int CACHE_TARGET_DISK = 1;
     public static final int CACHE_TARGET_MEMORY = 2;
 
+    //private static final long bucketCount = 32;
     private static final long bucketCount = 262144;
+   // private static final long bucketCount = 2000000;
     private static final short listItemSize = 20;
 
     HashMap<Long, Double[]> memoryCache;
 
     File diskCache;
     RandomAccessFile diskCacheFile;
+    MappedByteBuffer memoryMappedCache;
+    int currentFileLength = 0;
+    int currentCacheLength = 0;
 
     private int initializedCaches = 0;
 
@@ -80,6 +87,7 @@ public class NodeCache {
     // TODO user-definable cache dir/file
 
     // TODO: handle duplicate nodes
+    // TODO: filename used should be unique to this instance of NodeCache
 
     public void initCaches(int cacheTargets) throws IOException {
         if ((cacheTargets & CACHE_TARGET_MEMORY) == CACHE_TARGET_MEMORY) {
@@ -105,11 +113,7 @@ public class NodeCache {
                 File Dir = new File(Root.getAbsolutePath() + "/MapsForgeWriterCache");
 
                 if (!Dir.exists()) {
-                    Log.i("OBCL", "Attempting to create DIR");
-                    if (Dir.mkdir()){
-                        Log.i("OBCL", "DIR made!");
-
-                    }
+                    Dir.mkdir();
                 }
 
                 diskCache = new File(Dir, "NodeCache");
@@ -121,27 +125,69 @@ public class NodeCache {
                 diskCache.createNewFile();
 
                 diskCacheFile = new RandomAccessFile(diskCache,"rw");
+                diskCacheFile.setLength(1024*1024); // 1MB
+                memoryMappedCache = diskCacheFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, diskCacheFile.length());
+                currentCacheLength = (int) diskCacheFile.length();
 
                 initializedCaches |= CACHE_TARGET_DISK;
 
                 // -- create the first list item for each bucket --
+                byte blankListItem[] = new byte[20];
+                // node ID (placeholder)
+                blankListItem[0]  = (byte) 0xFF;
+                blankListItem[1]  = (byte) 0xFF;
+                blankListItem[2]  = (byte) 0xFF;
+                blankListItem[3]  = (byte) 0xFF;
+                blankListItem[4]  = (byte) 0xFF;
+                blankListItem[5]  = (byte) 0xFF;
+                blankListItem[6]  = (byte) 0xFF;
+                blankListItem[7]  = (byte) 0xFF;
+
+                // latitude
+                blankListItem[8]  = (byte) 0x00;
+                blankListItem[9]  = (byte) 0x00;
+                blankListItem[10]  = (byte) 0x00;
+                blankListItem[11]  = (byte) 0x00;
+
+                // longitude
+                blankListItem[12]  = (byte) 0x00;
+                blankListItem[13]  = (byte) 0x00;
+                blankListItem[14]  = (byte) 0x00;
+                blankListItem[15]  = (byte) 0x00;
+
+                // pointer
+                blankListItem[16]  = (byte) 0xFF;
+                blankListItem[17]  = (byte) 0xFF;
+                blankListItem[18]  = (byte) 0xFF;
+                blankListItem[19]  = (byte) 0xFF;
+
+
                 for (long i = 0; i < bucketCount; i++) {
-                    // write 64-bit placeholder node ID
-                    byte placeholder[] = new byte[8];
-                    Arrays.fill(placeholder, (byte) 0xFFFF);
-                    diskCacheFile.write(placeholder);
-
-                    // write 32-bit latitude and 32-bit longitude
-                    byte lonlat[] = new byte[8];
-                    Arrays.fill(lonlat, (byte) 0x0000);
-                    diskCacheFile.write(lonlat);
-
-                    // write null byte offset (we're the only item)
-                    byte offset[] = new byte[4];
-                    Arrays.fill(offset, (byte) 0xFFFF);
-                    diskCacheFile.write(offset);
+                    growMemoryMappedCacheIfNeeded();
+                    memoryMappedCache.put(blankListItem);
+                    currentFileLength += 20;
                 }
             }
+        }
+    }
+
+    private void growMemoryMappedCacheIfNeeded() throws IOException {
+        // if our current cache has less than 128kb of space free
+        if (currentFileLength > currentCacheLength-(128*1024)) {
+            // double the size
+            int targetSize = currentCacheLength*2;
+
+            // but let's not increase more than 10mb at a time
+            if (currentCacheLength > 10*1024*1024) {
+                targetSize = currentCacheLength+(10*1024*1024);
+            }
+
+            int cachePos = memoryMappedCache.position();
+            memoryMappedCache.force();
+            diskCacheFile.setLength(targetSize);
+            memoryMappedCache = diskCacheFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, diskCacheFile.length());
+            currentCacheLength = (int) diskCacheFile.length();
+            memoryMappedCache.position(cachePos);
         }
     }
 
@@ -233,8 +279,8 @@ public class NodeCache {
 
         // Read the first list item's node ID of this bucket to see if it's a placeholder
         byte nodeIdBytes[] = new byte[8];
-        diskCacheFile.seek(firstListItemByteOffset);
-        diskCacheFile.read(nodeIdBytes);
+        memoryMappedCache.position((int)firstListItemByteOffset);
+        memoryMappedCache.get(nodeIdBytes);
 
         // while the nodeID does not match our target
         long nodeIdInt = Longs.fromByteArray(nodeIdBytes);
@@ -242,9 +288,9 @@ public class NodeCache {
             // -- seek to the next node --
 
             // seek to the pointer and read it
-            diskCacheFile.seek(diskCacheFile.getFilePointer()+8);
+            memoryMappedCache.position((int) (diskCacheFile.getFilePointer()+8));
             byte pointer[] = new byte[4];
-            diskCacheFile.read(pointer);
+            memoryMappedCache.get(pointer);
 
             // if the pointer is null, we're done. The node doesn't exist
             if (    pointer[0] == (byte) 0xFFFF && pointer[1] == (byte) 0xFFFF &&
@@ -253,19 +299,19 @@ public class NodeCache {
             }
 
             // follow the pointer
-            diskCacheFile.seek(diskCacheFile.getFilePointer()+ Ints.fromByteArray(pointer));
+            memoryMappedCache.position((int) (diskCacheFile.getFilePointer()+ Ints.fromByteArray(pointer)));
 
             // read our next node ID
-            diskCacheFile.read(nodeIdBytes);
+            memoryMappedCache.get(nodeIdBytes);
             nodeIdInt = Longs.fromByteArray(nodeIdBytes);
         }
 
         // Cursor is just after the node ID. Read the rest of the node and return
         byte lat[] = new byte[4];
-        diskCacheFile.read(lat);
+        memoryMappedCache.get(lat);
 
         byte lon[] = new byte[4];
-        diskCacheFile.read(lon);
+        memoryMappedCache.get(lon);
 
         int out[] = new int[2];
         out[0] = Ints.fromByteArray(lat);
@@ -301,8 +347,10 @@ public class NodeCache {
 
         // Read the first list item's node ID of this bucket to see if it's a placeholder
         byte nodeid[] = new byte[8];
-        diskCacheFile.seek(firstListItemByteOffset);
-        diskCacheFile.read(nodeid);
+        memoryMappedCache.position((int)firstListItemByteOffset);
+        memoryMappedCache.get(nodeid);
+
+        boolean isPlaceHolder = false;
 
         // Check if the first item is a placeholder
         if (    nodeid[0] == (byte) 0xFFFF && nodeid[1] == (byte) 0xFFFF &&
@@ -310,59 +358,68 @@ public class NodeCache {
                 nodeid[4] == (byte) 0xFFFF && nodeid[5] == (byte) 0xFFFF &&
                 nodeid[6] == (byte) 0xFFFF && nodeid[7] == (byte) 0xFFFF) {
             // Yup, it's a placeholder. Seek to the start of the placeholder item in the file.
-            diskCacheFile.seek(firstListItemByteOffset);
+            memoryMappedCache.position((int)firstListItemByteOffset);
+            isPlaceHolder = true;
         } else {
             // Starting from the first item, follow the pointers to the end of the last item of the list
-            seekToEndOfList(firstListItemByteOffset, diskCacheFile);
+            seekToEndOfList(firstListItemByteOffset);
 
             // Let's modify this item to make it point to the end of the file
-            diskCacheFile.seek(diskCacheFile.getFilePointer() - 4); // seek back 4 bytes
-            diskCacheFile.write(Ints.toByteArray((int) (diskCacheFile.length()-diskCacheFile.getFilePointer()-4))); // write our pointer
+
+            memoryMappedCache.position((memoryMappedCache.position() - 4)); // seek back 4 bytes
+            memoryMappedCache.put(Ints.toByteArray((int) (currentFileLength-memoryMappedCache.position()-4))); // write our pointer
 
             // seek to the end of the file to write our item
-            diskCacheFile.seek(diskCacheFile.length());
+            memoryMappedCache.position(currentFileLength);
         }
 
         // ----------------------
         // --- write our item ---
-        writeListItem(n, diskCacheFile);
+        if (!isPlaceHolder) {
+            currentFileLength+=listItemSize;
+            growMemoryMappedCacheIfNeeded();
+        }
+
+        writeListItem(n);
+     //   memoryMappedCache.force();
+
     }
 
-    static void writeListItem(Node n, RandomAccessFile diskCacheFile) throws IOException {
+    private void writeListItem(Node n) throws IOException {
         // 8-byte Node ID
-        diskCacheFile.write(Longs.toByteArray(n.id));
+        memoryMappedCache.put(Longs.toByteArray(n.id));
 
         // 4-byte lat microdegrees
         byte lat[] = new byte[4];
         lat = Ints.toByteArray(degreesToMicroDegrees(n.lat));
-        diskCacheFile.write(lat);
+        memoryMappedCache.put(lat);
 
         // 4-byte lon microdegrees
         byte lon[] = new byte[4];
         lon = Ints.toByteArray(degreesToMicroDegrees(n.lon));
-        diskCacheFile.write(lon);
+        memoryMappedCache.put(lon);
 
         // No pointer yet
         byte offset[] = new byte[4];
         Arrays.fill(offset, (byte) 0xFFFF);
-        diskCacheFile.write(offset);
+        memoryMappedCache.put(offset);
     }
 
     // give me an offset from start of file to the first item in a list, and I'll seek to the end of
     // the last item of the list
-    static void seekToEndOfList(long firstListItemByteOffset, RandomAccessFile diskCacheFile) throws IOException {
+    private void seekToEndOfList(long firstListItemByteOffset) throws IOException {
         byte pointer[] = new byte[4];
-        diskCacheFile.seek(firstListItemByteOffset + (listItemSize-4)); // seek to first pointer
-        diskCacheFile.read(pointer); // read the pointer
+         memoryMappedCache.position((int)(firstListItemByteOffset + (listItemSize-4))); // seek to first pointer
+         memoryMappedCache.get(pointer); // read the pointer
 
         while (!(pointer[0] == (byte) 0xFFFF && pointer[1] == (byte) 0xFFFF &&
                 pointer[2] == (byte) 0xFFFF && pointer[3] == (byte) 0xFFFF)) {
             // current cursor is at the end of the pointer, so we want our
             // current position+pointer value+offset to find next pointer
-            diskCacheFile.seek(diskCacheFile.getFilePointer() + Ints.fromByteArray(pointer) + (listItemSize-4));
+            memoryMappedCache.position((memoryMappedCache.position() + Ints.fromByteArray(pointer) + (listItemSize-4)));
 
-            // grab our node ID
-            diskCacheFile.read(pointer);
+            // grab our next pointer
+            memoryMappedCache.get(pointer);
         }
     }
 
@@ -370,15 +427,7 @@ public class NodeCache {
         return (int) Math.round(degrees*1000000);
     }
 
-    static long getBucketIndex(long node_id) {
+    private static long getBucketIndex(long node_id) {
         return node_id % (bucketCount); // TODO: require bucketCount to be power of two, and use & instead of %?
-    }
-
-
-    static int byteSize(long x) {
-        if (x < 0) throw new IllegalArgumentException();
-        int s = 1;
-        while (s < 8 && x >= (1L << (s * 8))) s++;
-        return s;
     }
 }
