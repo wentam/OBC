@@ -25,6 +25,7 @@ import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Way;
 //
 // The file is a simple list of ways, with each way being the following:
 // * 4-byte integer defining length of way in bytes
+// * 8-byte way ID
 // * 2-byte integer defining number of nodes that follow
 // * a list of node IDs as 8-byte ints
 // * a list of tags:
@@ -77,6 +78,12 @@ public class OsmWayListCache {
         // -- convert this way into our format in memory (excluding the length header) --
 
         ArrayList<Byte> bytes = new ArrayList<>();
+
+        // add 8-byte way id
+        byte[] wayIdBytes = Longs.toByteArray(n.id);
+        for (int i = 0; i < wayIdBytes.length; i++) {
+            bytes.add(wayIdBytes[i]);
+        }
 
         // add 2-byte number of nodes
         byte[] nodeCountBytes = Shorts.toByteArray((short) n.nodes.length);
@@ -146,13 +153,17 @@ public class OsmWayListCache {
         byte[] wayBytes = new byte[length];
         mmapCache.get(wayBytes);
 
+        // create long with ID
+        long id = Longs.fromByteArray(new byte[] {wayBytes[0], wayBytes[1], wayBytes[2], wayBytes[3],
+                                                  wayBytes[4], wayBytes[5], wayBytes[6], wayBytes[7]});
+
         // create array of nodes
-        short nodeCount = Shorts.fromByteArray(new byte[] {wayBytes[0],wayBytes[1]});
+        short nodeCount = Shorts.fromByteArray(new byte[] {wayBytes[8],wayBytes[9]});
         long nodes[] = new long[nodeCount];
 
         for (int i = 0; i < nodeCount; i++) {
             byte[] node = new byte[8];
-            System.arraycopy(wayBytes, (i*8)+2, node, 0, 8);
+            System.arraycopy(wayBytes, (i*8)+2+8, node, 0, 8);
             nodes[i] = Longs.fromByteArray(node);
         }
 
@@ -163,7 +174,7 @@ public class OsmWayListCache {
         boolean currentlyReadingVal = false;
         StringBuffer keyBuffer = new StringBuffer();
         StringBuffer valBuffer = new StringBuffer();
-        for (int i = (nodeCount*8)+2; i < wayBytes.length; i++) { // iterate over all remaining bytes
+        for (int i = (nodeCount*8)+2+8; i < wayBytes.length; i++) { // iterate over all remaining bytes
             byte b = wayBytes[i];
 
             if ((char)b == '=' && currentlyReadingKey) {
@@ -191,6 +202,7 @@ public class OsmWayListCache {
 
         // create our Way object
         Way w = new Way();
+        w.id = id;
         w.nodes = nodes;
         w.tags = tags;
 
