@@ -1,9 +1,8 @@
 package us.egeler.matt.obc.mapDataManager.osmXmlReader;
 
-import android.util.Xml;
-
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +39,7 @@ public class OsmXmlReader {
     // reads from the InputStream specific in the constructor,
     // writes OsmElements to the OsmElementOutputStream specified in the constructor
     public void read() throws XmlPullParserException, IOException {
-        xp = Xml.newPullParser();
+        xp = XmlPullParserFactory.newInstance().newPullParser();
         xp.setInput(is, null);
 
         int eventType = xp.getEventType();

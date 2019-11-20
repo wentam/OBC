@@ -200,7 +200,7 @@ public class OsmNodeKeyValueCache {
             // -- seek to the next node --
 
             // seek to the pointer and read it
-            mmapCache.position((int) (diskCacheRaf.getFilePointer()+8));
+            mmapCache.position((int) (mmapCache.position()+8));
             byte pointer[] = new byte[4];
             mmapCache.get(pointer);
 
@@ -211,7 +211,7 @@ public class OsmNodeKeyValueCache {
             }
 
             // follow the pointer
-            mmapCache.position((int) (diskCacheRaf.getFilePointer()+ Ints.fromByteArray(pointer)));
+            mmapCache.position((int) (mmapCache.position()+ Ints.fromByteArray(pointer)));
 
             // read our next node ID
             mmapCache.get(nodeIdBytes);

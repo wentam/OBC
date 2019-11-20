@@ -138,7 +138,7 @@ public class OsmWayListCache {
     }
 
     public Way getNextWay() {
-        if (readingPosition > currentDataLength)  {
+        if (readingPosition >= currentDataLength)  {
             return null;
         }
 
