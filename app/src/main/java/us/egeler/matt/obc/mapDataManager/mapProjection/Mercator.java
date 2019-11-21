@@ -1,7 +1,5 @@
 package us.egeler.matt.obc.mapDataManager.mapProjection;
 
-import android.util.Log;
-
 public class Mercator implements MapProjection {
     long mapSizeX;
     long mapSizeY;
@@ -25,7 +23,7 @@ public class Mercator implements MapProjection {
 
     public double xToLon(double x) {
         double remap = (x/mapSizeX); // map X with it's range of 0-mapSizeX to 0-1
-        return (remap*360)-180; // remap 0 to 1 to -180 to 180
+        return (remap*360D)-180D; // remap 0 to 1 to -180 to 180
     }
 
     public double yToLat(double y) {

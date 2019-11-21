@@ -11,7 +11,7 @@ public class Way extends MapsForgeElement {
 
     Special case: coastline ways must always have all 16 bits set.
      */
-    public short subTileBitmap;
+    public short subTileBitmap = 0;
 
     // layer (OSM-Tag: layer=...) + 5 (to avoid negative values)
     //
@@ -40,5 +40,6 @@ public class Way extends MapsForgeElement {
 
     // optional, just available to make calc easier in certain situations
     public int[] parentTileCoords;
+    public int[] parentTileLatLonMicroDegrees;
 
 }

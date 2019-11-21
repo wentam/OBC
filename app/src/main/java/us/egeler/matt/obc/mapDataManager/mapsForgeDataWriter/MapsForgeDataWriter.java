@@ -24,19 +24,8 @@ import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Node;
 import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.OsmElement;
 import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Way;
 
-// TODO: ensure the following case is handled: OSM file with all nodes listed after ways
-// this results in every single Way needing to be cached while Nodes are read.
-// this is fine as long as we are smart about caching on disk when this is too much data!
-
-// TODO: perhaps allow the user of MapsForgeDataWriter to decide where stuff gets cached.
-// the user of this class knows more about the data source than we do, and is in a better position
-// to make that decision
-//
-// the caveat of this is that some elements will always be more efficiently cached in memory than on disk.
-// perhaps a more vague "PREFER_DISK" or "PREFER_MEMORY" type flag would be in order so
-// that the writer could choose to use memory for the little stuff
-
-
+// TODO: generally needs cleanup/refactor
+// TODO: define nodeCache bucket count based on file size
 public class MapsForgeDataWriter {
     static final int FORMAT_VERSION = 5;
     private OutputStream os;
@@ -143,6 +132,9 @@ public class MapsForgeDataWriter {
             // 2 in the subtile bitmap, what counts as being "relevant"? A node? The way having a path through the subtile without any nodes?
             // 3 in a way, the nodes are an offset from the NW corner of a tile. Which tile? the tile the first node exists in? (this would result in negative numbers)
             // 4 which tiles do I put the way in if it crosses multiple tiles? Just the tile it starts in? All of the tiles it crosses, each time with a different subtile bitmap?
+            // TODO 5 if a way has a node to the left of a tile and a node to the right of a tile, but zero nodes inside the tile, does the way go into the tile ?
+            // TODO My guess is that the answer is yes here. If so, this code needs to get reworked to understand line intersections
+            // TODO Assuming this is the case, we could use getTileIntersectionsForLine for each node pair to see which ways we need to stick each node in
             //
             // we can create an OSM file with a manually created way that crosses 4 tiles in a loop, and convert it to a mapsforge file with the official tool to answer these questions
             //
@@ -162,66 +154,128 @@ public class MapsForgeDataWriter {
 
             // add nodes to our mapsforge way. in OSM format, nodes are stored as ID references.
             // for our mapsforge way, we write the node lat/lon directly into the way
-            // TODO node coords should be the difference to the top-left corner of the current tile
 
             ArrayList<us.egeler.matt.obc.mapDataManager.mapsForgeDataModel.Way> mapsForgeWays = new ArrayList<>();
             us.egeler.matt.obc.mapDataManager.mapsForgeDataModel.Way mapsForgeWay = new us.egeler.matt.obc.mapDataManager.mapsForgeDataModel.Way();
             mapsForgeWays.add(mapsForgeWay);
 
-            // create all mapsforge ways for this OSM way
+            // create all mapsforge ways for this OSM way while adding nodes
             // we need one mapsforge way for each tile that this OSM way exists in.
             // see explanation above
             us.egeler.matt.obc.mapDataManager.mapsForgeDataModel.Way currentWay = mapsForgeWays.get(0);
             int previousNode[] = null;
+            int[] previousTile = null;
             for (int i = 0; i < w.nodes.length; i++) {
                 long nodeId = w.nodes[i];
 
                 int latlon[] = nodeCache.getNode(nodeId);
-                int[] thisTile = getTileCoordsForNode(tileMercator, latlon);
+                int[] thisTile = TileUtils.getTileCoordsForNode(tileMercator, latlon);
+                int[] tileLatLon = TileUtils.getLatLonForTile(tileMercator, thisTile);
+                int[] latlonDiff = new int[]{(latlon[0]-tileLatLon[0]),(latlon[1]-tileLatLon[1])};
 
                 if (currentWay.parentTileCoords == null) {
-                    currentWay.parentTileCoords = latlon;
+                    currentWay.parentTileCoords = thisTile;
+                    mapsForgeWay.nodes.add(latlonDiff);
+                    // assign new tile to new way
+                    currentWay.parentTileCoords = thisTile;
+                    currentWay.parentTileLatLonMicroDegrees = tileLatLon;
                 } else if (thisTile[0] != currentWay.parentTileCoords[0] || thisTile[1] != currentWay.parentTileCoords[1]) {
                     // this node is in a new tile. we will still add this node to this way to complete it for it's tile
-                    currentWay.nodes.add(latlon);
+                    int[] prevTileLatLon = TileUtils.getLatLonForTile(tileMercator, previousTile);
+                    int[] prevLatlonDiff = new int[]{(latlon[0]-prevTileLatLon[0]),(latlon[1]-prevTileLatLon[1])};
+                    currentWay.nodes.add(prevLatlonDiff);
 
                     // we then create a new Way for the new tile.
                     currentWay = new us.egeler.matt.obc.mapDataManager.mapsForgeDataModel.Way();
                     mapsForgeWays.add(currentWay);
 
                     // The new way needs to include this node and the previous node.
-                    currentWay.nodes.add(previousNode);
-                    currentWay.nodes.add(latlon);
+                    int[] prevNodeLatlonDiff = new int[]{(previousNode[0]-tileLatLon[0]),(previousNode[1]-tileLatLon[1])};
+                    currentWay.nodes.add(prevNodeLatlonDiff);
+                    currentWay.nodes.add(latlonDiff);
 
                     // assign new tile to new way
                     currentWay.parentTileCoords = thisTile;
+                    currentWay.parentTileLatLonMicroDegrees = tileLatLon;
+
                 } else {
-                    mapsForgeWay.nodes.add(latlon);
+                    mapsForgeWay.nodes.add(latlonDiff);
                 }
 
                 previousNode = latlon;
+                previousTile = thisTile;
             }
 
-            // TODO define subtile bitmap
-            // TODO define layer
-            // TODO define tagIndexes and write tags to header
-            // TODO define name, housenumber, reference
-            // TODO define label position
+            // add everything else into each mapsforge way
+            MapProjection subTileMercator = new Mercator((long)Math.pow(2,(baseZoomLevel+2)), (long)Math.pow(2,(baseZoomLevel+2)));
+            for (us.egeler.matt.obc.mapDataManager.mapsForgeDataModel.Way mw : mapsForgeWays) {
+                // define subtile bitmap
+
+                // NOTE: sometimes our subtile bitmap differs slightly from mapsforge. Here are a couple examples.
+                // I believe this occurs because mapsforge is setting a neighbor bit if the line is extremely close to the edge to handle imprecision and/or road width.
+                //
+                // Personally I don't feel this is necessary, as you're only going to see a couple pixels of a road in that situation.
+                // Nevertheless, documenting it here in case it does become an issue.
+
+                // way ID 17809940 zoom level 14
+                // mapsforge
+                // 0000
+                // 1100
+                // 1110
+                // 0000
+
+                // ours
+                // 0000
+                // 1000
+                // 1110
+                // 0000
 
 
-            // determine what tile this Way needs to go into
-            //long tileX = (long) Math.floor(tileMercator.lonToX((mapsForgeWay.nodes[1]/1000000D)));
-            //long tileY = (long) Math.floor(tileMercator.latToY((mapsForgeWay.nodes[0]/1000000D)));
-         //   Log.i("OBCL", "putting way "+w.id+" into tile "+tileX+","+tileY);
+                // way ID 603189491 zoom level 14
+                // mapsforge
+                // 0000
+                // 1000
+                // 1000
+                // 1000
+
+                // ours
+                // 0000
+                // 1000
+                // 1000
+                // 0000
+
+                double[] previousNodeCoords = null;
+                for (int[] nodeLatLon : mw.nodes)  {
+                    // figure out which sub tile we need to mark for this node
+                    double[] subTileCoords = TileUtils.getPreciseTileCoordsForNode(subTileMercator, new int[]{mw.parentTileLatLonMicroDegrees[0]+nodeLatLon[0], mw.parentTileLatLonMicroDegrees[1]+nodeLatLon[1]});
+                    double[] localSubTileCoords = new double[] {subTileCoords[0]-(mw.parentTileCoords[0]*4), subTileCoords[1]-(mw.parentTileCoords[1]*4)};
+
+                    if (previousNodeCoords != null) {
+                        // there was a previous node in the chain. we need to flip bits for anything between our current node and the previous node
+                        ArrayList<long[]> intersections = TileUtils.getTileIntersectionsForLine(previousNodeCoords, localSubTileCoords, 4, 4);
+
+                        for (long[] intersection : intersections) {
+                            if (!(intersection[0] >= 4 || intersection[0] < 0 || intersection[1] >= 4 ||intersection[1] < 0)) {
+                                // set the bit in bitmap for this sub tile
+                                mw.subTileBitmap = (short)(mw.subTileBitmap | (0b1000000000000000>>>((4*intersection[1])+intersection[0])));
+                            }
+                        }
+
+                    }
+
+                    previousNodeCoords = localSubTileCoords;
+                }
+
+
+
+                // TODO define layer
+                // TODO define tagIndexes and write tags to header
+                // TODO define name, house number, reference
+                // TODO define label position
+
+            }
+
         }
-
         Log.i("OBCL","done creating tiles");
     }
-
-    private int[] getTileCoordsForNode(MapProjection p, int latlon_microdegrees[]){
-        int tileX = (int) Math.floor(p.lonToX((latlon_microdegrees[1]/1000000D)));
-        int tileY = (int) Math.floor(p.latToY((latlon_microdegrees[0]/1000000D)));
-        return new int[] {tileX, tileY};
-    }
-
 }

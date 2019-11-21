@@ -3,6 +3,7 @@ package us.egeler.matt.obc;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Environment;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -10,9 +11,20 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
+import us.egeler.matt.obc.mapDataManager.mapProjection.MapProjection;
+import us.egeler.matt.obc.mapDataManager.mapProjection.Mercator;
+import us.egeler.matt.obc.mapDataManager.mapsForgeDataWriter.MapsForgeDataWriter;
+import us.egeler.matt.obc.mapDataManager.osmXmlReader.DirectOsmXmlReader;
 import us.egeler.matt.obc.page.MainPage;
 import us.egeler.matt.obc.page.MapPage;
 import us.egeler.matt.obc.page.Page;
@@ -73,6 +85,61 @@ public class MainActivity extends FragmentActivity {
         pager = (ViewPager) findViewById(R.id.viewPager);
         pager.setAdapter(myFragmentPagerAdapter);
         pager.setOffscreenPageLimit(5);
+
+        // projection test
+        MapProjection p = new Mercator(100, 100);
+
+       /* double x = p.lonToX(10);
+        Log.i("OBCL","lon to x = "+x);
+        double lon = p.xToLon(x);
+        Log.i("OBCL","x to lon = "+lon);*/
+       /* double y = p.latToY(43);
+        Log.i("OBCL","lat 43 to y = "+y);
+        double lat = p.yToLat(y);
+        Log.i("OBCL","y "+y+" to lat  = "+lat);*/
+
+        // OsmXmlReader test
+        class MyOutputStream extends OutputStream {
+            public String out = "";
+
+            @Override
+            public void write(int b) throws IOException {
+                out = out + ((char) b);
+            }
+        }
+
+        MyOutputStream mos = new MyOutputStream();
+
+        MapsForgeDataWriter writer;
+
+        try {
+            File Root = Environment.getExternalStorageDirectory();
+            File Dir = new File(Root.getAbsolutePath() + "/MapsForgeWriterCache");
+
+            File infile = new File(Dir, "bigmap.osm");
+
+
+            writer = new MapsForgeDataWriter(mos, Dir);
+            writer.writeFromOSMXML(infile);
+            writer.close();
+        } catch (Exception e) {
+            Log.e("OBC","Bad:",e);
+        }
+/*
+        try {
+            File Root = Environment.getExternalStorageDirectory();
+            File Dir = new File(Root.getAbsolutePath() + "/MapsForgeWriterCache");
+
+            File infile = new File(Dir, "smallmap.osm");
+
+
+            DirectOsmXmlReader r = new DirectOsmXmlReader();
+            r.read(new FileInputStream(infile));
+        } catch (Exception e) {
+            Log.e("OBC","Bad:",e);
+        }*/
+
+
     }
 
     public static class MyFragmentPagerAdapter extends FragmentPagerAdapter {
