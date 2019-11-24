@@ -40,14 +40,12 @@ public class TileUtils {
                 (long)Math.floor(pointB[1])
         });
 
-        // figure out the length of adjacent and opposite sides of a triangle based on our line, and the angle of our line
+        // figure out the length of adjacent and opposite sides of a triangle based on our line
         double adjacent = pointB[0]-pointA[0];
         double opposite = pointB[1]-pointA[1];
         double ratio = opposite/adjacent;
 
-
         // figure out if we process vertically or horizontally.
-
         if (Math.abs(adjacent) > Math.abs(opposite)) {
             // horizontal processing
 
@@ -96,8 +94,8 @@ public class TileUtils {
         }
 
 
-        // remove duplicates and intersections that are outside of the provided coordinate system
-        ArrayList<long[]> newIntersections = new ArrayList();
+        // remove duplicate intersections as well as intersections that are outside of the provided coordinate system
+        ArrayList<long[]> newIntersections = new ArrayList<>();
         for (long[] intersection : intersections)  {
             boolean existsAlready = false;
             for (long [] newIntersection : newIntersections) {
