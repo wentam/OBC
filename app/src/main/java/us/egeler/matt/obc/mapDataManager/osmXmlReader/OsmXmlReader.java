@@ -249,6 +249,9 @@ public class OsmXmlReader {
                 case "user":
                     e.user = attrVal;
                     break;
+                case "layer":
+                    e.layer = Short.parseShort(attrVal);
+                    break;
             }
         }
     }

@@ -12,4 +12,5 @@ public abstract class OsmElement implements Serializable {
     public long changeset;
     public long uid;
     public String user;
+    public byte layer;
 }

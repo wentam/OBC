@@ -266,9 +266,7 @@ public class MapsForgeDataWriter {
                     previousNodeCoords = localSubTileCoords;
                 }
 
-
-
-                // TODO define layer
+                mw.layer = w.layer;
                 // TODO define tagIndexes and write tags to header
                 // TODO define name, house number, reference
                 // TODO define label position
