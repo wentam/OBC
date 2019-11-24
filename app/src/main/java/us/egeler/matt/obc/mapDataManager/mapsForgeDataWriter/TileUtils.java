@@ -43,11 +43,10 @@ public class TileUtils {
         // figure out the length of adjacent and opposite sides of a triangle based on our line, and the angle of our line
         double adjacent = pointB[0]-pointA[0];
         double opposite = pointB[1]-pointA[1];
-        double angle = Math.atan(opposite/adjacent);
+        double ratio = opposite/adjacent;
 
 
         // figure out if we process vertically or horizontally.
-//        byte processDirection = 1; // 0 == horizontal 1 == vertical
 
         if (Math.abs(adjacent) > Math.abs(opposite)) {
             // horizontal processing
@@ -58,7 +57,7 @@ public class TileUtils {
             // test every vertical edge between the two points
             for (long i = (long)Math.ceil(leftMostPoint[0]); i < (long)Math.ceil(rightMostPoint[0]); i++) {
                 double differenceToFirstPoint = i-leftMostPoint[0];
-                double distanceAlongEdge = ((Math.tan(angle) * differenceToFirstPoint)) + leftMostPoint[1];
+                double distanceAlongEdge = (ratio * differenceToFirstPoint) + leftMostPoint[1];
 
                 // mark the tiles left and right of this edge at this Y value as intersected
                 intersections.add(new long[] {
@@ -80,7 +79,7 @@ public class TileUtils {
             // test every horizontal edge between the two points
             for (long i = (long)Math.ceil(smallestCoordPoint[1]); i < (long)Math.ceil(largestCoordPoint[1]); i++) {
                 double differenceToFirstPoint = i-smallestCoordPoint[1];
-                double distanceAlongEdge = (differenceToFirstPoint / Math.tan(angle)) + smallestCoordPoint[0];
+                double distanceAlongEdge = (differenceToFirstPoint / ratio) + smallestCoordPoint[0];
 
                 // mark the tiles above and below this edge at this X value as intersected
                 intersections.add(new long[] {
