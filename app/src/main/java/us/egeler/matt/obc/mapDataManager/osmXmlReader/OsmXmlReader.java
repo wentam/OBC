@@ -250,7 +250,7 @@ public class OsmXmlReader {
                     e.user = attrVal;
                     break;
                 case "layer":
-                    e.layer = Short.parseShort(attrVal);
+                    e.layer = Byte.parseByte(attrVal);
                     break;
             }
         }
