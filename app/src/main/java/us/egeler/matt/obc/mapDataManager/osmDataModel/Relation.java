@@ -1,4 +1,4 @@
-package us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement;
+package us.egeler.matt.obc.mapDataManager.osmDataModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;

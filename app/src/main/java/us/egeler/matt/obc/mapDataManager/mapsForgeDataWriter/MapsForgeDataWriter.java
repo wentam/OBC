@@ -10,7 +10,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Map;
 
 import us.egeler.matt.obc.mapDataManager.cache.MapsForgeTileCache;
 import us.egeler.matt.obc.mapDataManager.cache.OsmNodeKeyValueCache;
@@ -19,10 +18,10 @@ import us.egeler.matt.obc.mapDataManager.mapProjection.MapProjection;
 import us.egeler.matt.obc.mapDataManager.mapProjection.Mercator;
 import us.egeler.matt.obc.mapDataManager.osmXmlReader.OsmElementOutputStream;
 import us.egeler.matt.obc.mapDataManager.osmXmlReader.OsmXmlReader;
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Bounds;
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Node;
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.OsmElement;
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Way;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.Bounds;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.Node;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.OsmElement;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.Way;
 
 // TODO: generally needs cleanup/refactor
 // TODO: define nodeCache bucket count based on file size
@@ -60,7 +59,7 @@ public class MapsForgeDataWriter {
 
             @Override
             public void writeElement(OsmElement e) {
-                if (e instanceof us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Node) {
+                if (e instanceof us.egeler.matt.obc.mapDataManager.osmDataModel.Node) {
                     // This is the first read-through of the file, let's cache the node
                     try {
                         nodeCache.cacheNode((Node) e);
@@ -70,13 +69,13 @@ public class MapsForgeDataWriter {
                     } catch (IOException ex) {
                        Log.e("OBCL", "bad", ex);
                     }
-                } else if (e instanceof us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Way) {
+                } else if (e instanceof us.egeler.matt.obc.mapDataManager.osmDataModel.Way) {
                     try {
                         wayCache.cacheWay((Way) e);
                     } catch (IOException ex) {
                         Log.e("OBCL", "bad", ex);
                     }
-                } else if (e instanceof us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Bounds) {
+                } else if (e instanceof us.egeler.matt.obc.mapDataManager.osmDataModel.Bounds) {
                     bounds = (Bounds) e;
                 }
 

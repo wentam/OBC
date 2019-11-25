@@ -1,19 +1,17 @@
 package us.egeler.matt.obc.mapDataManager.osmXmlReader;
 
-import android.util.Log;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Member;
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Way;
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Bounds;
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Node;
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.OsmElement;
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Relation;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.Member;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.Way;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.Bounds;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.Node;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.OsmElement;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.Relation;
 
 public class DirectOsmXmlReader {
     InputStream is;

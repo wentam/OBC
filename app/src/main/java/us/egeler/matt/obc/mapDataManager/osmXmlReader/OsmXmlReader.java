@@ -7,12 +7,12 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
 
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Bounds;
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Member;
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Node;
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.OsmElement;
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Relation;
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Way;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.Bounds;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.Member;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.Node;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.OsmElement;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.Relation;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.Way;
 
 // OsmXmlReader reads in OSM XML and spits out objects containing the map data into a stream as the file is read
 //

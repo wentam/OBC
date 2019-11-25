@@ -1,8 +1,5 @@
 package us.egeler.matt.obc.mapDataManager.cache;
 
-import android.os.Environment;
-import android.util.Log;
-
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 
@@ -14,7 +11,7 @@ import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Node;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.Node;
 
 // Caches OsmElement nodes on disk or memory in a way that the data can be retrieved quickly.
 // Backed by a HashMap for memory, and implements hashmap-like storage on disk.

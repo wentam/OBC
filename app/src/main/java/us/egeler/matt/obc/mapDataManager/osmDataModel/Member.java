@@ -1,4 +1,4 @@
-package us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement;
+package us.egeler.matt.obc.mapDataManager.osmDataModel;
 
 public class Member extends OsmElement {
     public String type;

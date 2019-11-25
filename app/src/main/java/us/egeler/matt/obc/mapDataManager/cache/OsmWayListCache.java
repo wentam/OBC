@@ -1,9 +1,5 @@
 package us.egeler.matt.obc.mapDataManager.cache;
 
-import android.util.Log;
-
-import com.google.common.base.Strings;
-import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import com.google.common.primitives.Shorts;
@@ -17,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import us.egeler.matt.obc.mapDataManager.osmXmlReader.osmElement.Way;
+import us.egeler.matt.obc.mapDataManager.osmDataModel.Way;
 
 // Caches osmElement Ways as an array for easy iteration later
 //
